@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "afoley-site"
+version = "0.1.0"
+description = ""
+authors = ["Alexander Foley <alexandergfoley@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+cmake = "3.21.2"
+dlib = "19.24.0"
+opencv-python = "4.5.3.56"
+bcrypt = "3.2.2"
+face-recognition = "1.3.0"
+# pyttsx3 = "2.90"
+# pylab-sdk = "1.3.2"
+# audiosegment = "0.23.0"
+
+# SpeechRecognition = "3.8.1"
+# PyAudio = "^0.2.11"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.6.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
