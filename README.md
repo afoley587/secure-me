@@ -22,7 +22,7 @@ Enjoy!
 ## Build Your Own Biometrics (in only a few lines of code)
 
 BYOB? Bring your own what? No, in this post we are doing 
-Build Your Own Biometerics. We are all familiar
+Build Your Own Biometrics. We are all familiar
 with iPhone FaceID or some of the really neat Unix Face recognition
 tools that are available today. But, have you ever built your own?
 I haven't, so I decided to. I hope you enjoy the ride!
@@ -580,7 +580,7 @@ poetry run python main.py
 ```
 
 <video width="320" height="240" controls>
-  <source src="example.mov" type="video/mp4">
+  <source src="example-compressed.mp4" type="video/mp4">
 </video>
 
 ## Extra Notes
