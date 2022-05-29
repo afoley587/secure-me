@@ -88,8 +88,7 @@ def do_login(username: str, salt: str, database: str):
     """
     dbi       = DBInterface(database)
     password  = bcrypt.hashpw(
-        get_password().encode('utf-8'),
-        salt.encode('utf-8')
+        get_password().encode('utf-8'), salt
     ).decode('utf-8')
 
     statement = """SELECT name FROM user WHERE name = ? AND password = ?"""

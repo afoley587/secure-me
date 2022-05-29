@@ -5,7 +5,7 @@ import sys
 
 from cv2 import cv2
 
-from facial_data import FaceDetector
+from face_detector import FaceDetector
 from utils import (
     gather_files,
     draw_rectangle,
@@ -14,8 +14,9 @@ from utils import (
     do_login
 )
 
-DB_PATH = os.environ["DATABASE_PATH"]
-DB_SALT = os.environ["DATABASE_SALT"]
+DATA_PATH = os.environ["DATA_PATH"]
+DB_SALT   = os.environ["DATABASE_SALT"].encode('utf-8')
+DB_PATH   = os.path.join(DATA_PATH, "database", "users.db")
 
 def main():
     """Main entrypoint / loop of the system
