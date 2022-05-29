@@ -18,6 +18,9 @@ In this post, I walk through:
 
 Enjoy!
 
+Medium Link: https://medium.com/@alexandergfoley/build-your-own-biometrics-in-only-a-few-lines-of-code-d47c7d2f66d1
+GitHub Link: https://github.com/afoley587/secure-me
+
 # Blog
 ## Build Your Own Biometrics (in only a few lines of code)
 
