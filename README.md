@@ -552,4 +552,15 @@ export DATA_PATH="${GIT_ROOT}/data"
 poetry run python main.py
 ```
 
-<video src="assets/example.mov" controls="controls" style="max-width: 730px;"></video>
+<video width="320" height="240" controls>
+  <source src="example.mov" type="video/mp4">
+</video>
+
+## Extra Notes
+
+Some functions were left out for the sake of brevity:
+`gather_files`:
+
+`resize_and_recolor`:
+
+`draw_rectangle`: 
