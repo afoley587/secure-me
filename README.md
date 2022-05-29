@@ -579,7 +579,7 @@ export DATA_PATH="${GIT_ROOT}/data"
 poetry run python main.py
 ```
 
-![alt text](https://github.com/afoley587/secure-me/blob/main/example-compressed.mp4 "Logo Title Text 1")
+![Example](example.gif "Final Product")
 
 ## Extra Notes
 
