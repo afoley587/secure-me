@@ -1,26 +1,44 @@
 # LinkedIn
+BYOB - but in the non-traditional sense!
+Today is about Build Your Own Biometrics
+
+I had some extra time yesterday and also came across
+a very neat python library, face_recognition. It allows
+for facial recognition without a lot of the heavy lifting!
+
+Naturally, I figured this would be a fun project to create 
+my own biometric system.... a lightweight and non-production
+one of course.
+
+In this post, I walk through:
+
+1. Setting up basic facial recognition in python
+2. Setting up SQLite username/password authentication in python
+3. Tying everything together
+
+Enjoy!
 
 # Blog
 ## Build Your Own Biometrics (in only a few lines of code)
 
-BYOB? Bring your own what? No, today we are doing 
-__B__uild __Y__our __O__wn __B__iometerics. We are all familiar
+BYOB? Bring your own what? No, in this post we are doing 
+Build Your Own Biometerics. We are all familiar
 with iPhone FaceID or some of the really neat Unix Face recognition
 tools that are available today. But, have you ever built your own?
-I haven't, so I decided to today and hope you enjoy the ride!
+I haven't, so I decided to. I hope you enjoy the ride!
 
-From a high level, most pieces of software work by:
+From a high level, most pieces of face recognition software work by:
 
-1. Registering your face
-2. Asking for a Pin or some sort of password
+1. Analyzing your face
+2. Asking for a pin or some sort of password for the analyzed face
 
 After which, they give you the keys to your kingdom. So, we will need to 
 build those two things:
 
 1. Something that takes input from our webcam, processes the faces,
     and see if it knows who those faces belong to.
-2. Once the faces are recognized, something must ask for a username as
-    input and see if its the proper password.
+2. Once the faces are recognized, something must ask for a password as
+    input and see if its the proper password for the recognized face.
   
 Lets get started!
 
@@ -30,7 +48,7 @@ cool python library called [`face_recognition`](https://github.com/ageitgey/face
 
 Of course, its a non-standard library, and is only one out a few that we are going to use
 today. It also has a few OS dependencies. If you're running on Mac, you might need these
-four brew installs (`Brewfile` included [here]()!):
+four brew installs (`Brewfile` included [here](https://github.com/afoley587/secure-me/blob/main/Brewfile)!):
 ```shell
 brew install "cmake"
 brew install "dlib"
@@ -70,7 +88,7 @@ Now, we are ready to start building! Let's do the following:
 
 * Gather Facial Data
 * Build Our Face Detector
-* Generate Our Database
+* Generate Our Password Database
 * Build Our Authentication Layer
 * Bring It All Together
 
@@ -94,15 +112,16 @@ And that's all we have to do for our training set!
 Now we can move to building our face detector! Create a file called
 `face_detector.py`. Let's start tackling that from top to bottom.
 
-First, we need our imports:
+First, we need our imports. We are going to need both the 
+`face_recognition` and `numpy` libraries.
+
 ```python
 import face_recognition
 import numpy as np
 ```
 
-We are going to need both the `face_recognition` and `numpy` libraries.
+Then we can define our `FaceDetector` class:
 
-Then we can define our class:
 ```python
 # face_detector.py
 class FaceDetector:
@@ -119,7 +138,7 @@ class FaceDetector:
         self.images    = []
 ```
 
-Our class is going to save three different lists:
+Our class is going to have three different list attributes:
 
 1. The names of the faces it can recognize
 2. The encodings (face recognition data) of those faces
@@ -130,7 +149,11 @@ We will then need two methods for our class:
 1. A trainer to set the aforementioned lists
 2. A searcher to search a given image for any known faces
 
-We are going to start with the trainer:
+We are going to start with the trainer. As you can see, we are just going to walk 
+through every file in a given data list (more on that below). 
+We are then going to load the image using  the `face_recognition` library, 
+and then we are going to get the facial data fro those images. 
+Finally, we are just going to store the image, encoding, and name in our parallel arrays.
 
 ```python
     # face_detector.py
@@ -157,22 +180,16 @@ We are going to start with the trainer:
             self.names.append(names[index])
 ```
 
-As you can see, we are just going to walk through every file in a given
-data list. We are then going to load the image using the `face_recognition`
-library, and then we are going to get the facial data fro those images.
-Finally, we are just going to store the image, encoding, and name in our
-parallel arrays.
-
 Our search isn't much more complicated.
 
 The first two lines of the function should look very similar. We are 
-first using the `face_recognition.face_locations` function to search the give 
+first using the `face_recognition.face_locations` function to search the given frame 
 for any faces. These faces may or may not be recognized by the system, but at least
 we know if there are or are not faces.
 
 Next, we use the `face_recognition.face_encodings` function to search each face in the
 image and create the facial encodings from those locations. Essentially, we are decomposing 
-the face into a set of data that our system can use as a comparator.
+the faces at the `face_locations` into a set of data that our system can use as a comparator.
 
 ```python
     # face_detector.py
@@ -199,9 +216,9 @@ frame match any of our known images. The `matches` array will be a list of boole
 whether the face in our frame matches the faces we know or not.
 
 Next, we find the face distances. A face distance is a measure of difference in the faces.
-So if a face distance is high (close to 1), it means that two faces are not very similar. We 
-can then pull the minimum value from the `face_distances` array, meaning the most prominent
-face in our frame
+So if a face distance is high (close to 1), it means that two faces are not similar. If the
+distance is closer to 0, then the faces are similar. We can then pull the minimum value 
+from the `face_distances` array, meaning the most prominent face in our frame
 
 ```python
         # face_detector.py
@@ -212,7 +229,7 @@ face in our frame
 
 ```
 
-Finally, we do a quick sanity check: did our most prominent face actually match?
+Finally, we do a quick sanity check: did our most prominent face actually match a known face?
 If it did, lets pull the name out of our `names` array and store both the name
 and the location.
 
@@ -242,17 +259,17 @@ will go in `data/users/passwords.json`:
 }
 ```
 
-Of course, dont store anything super sensitive in Git, but I think its okay
+Of course, don't store anything super sensitive in Git, but I think its okay
 for these demonstrative purposes!
 
-Now, let's go through a helper script to build or database for us:
+Now, let's go through a helper script to build our database for us:
 
 First, we import some libraries and set some globally usable
 variables:
 
-  * DATA_PATH - Path to our data directory
-  * DB_SALT - A salt to hash passwords with
-  * DB_PATH - The database path
+  * `DATA_PATH` - Path to our data directory
+  * `DB_SALT` - A salt to hash passwords with
+  * `DB_PATH` - The database path
 
 ```python
 # generate_db.py
@@ -270,6 +287,7 @@ We then remove any old database and then create our base statement and
 our user statement. The base statement will be used to initialize the
 database table while the user statement will add each user from the above
 json file into that table:
+
 ```python
 # generate_db.py
 # remove the old DB in favor of our newly seeded one
@@ -288,6 +306,7 @@ USER_STATEMENT = "INSERT INTO user (name, password) VALUES"
 
 We then read our json config file, hash each password we found with bcrypt, 
 and then add the user/password pair to our user statement:
+
 ```python
 # generate_db.py
 with open(os.path.join(DATA_PATH, "users", "passwords.json"), "r", encoding="utf-8") as config:
@@ -305,6 +324,7 @@ USER_STATEMENT += ";"
 ```
 
 Finally, we just execute our statements:
+
 ```python
 # generate_db.py
 # Run the SQL on our database
@@ -320,7 +340,7 @@ with sql.connect(DB_PATH) as con:
 Our database is now initialized and ready for use.
 
 ## Build Our Authentication Layer
-So we have a database, but we need something to interact with it - queue a python
+So we have a database, but we need something to interact with it - cue our python
 class!
 
 ```python
@@ -338,7 +358,7 @@ class DBInterface:
 ```
 
 Our `DBInterface` will act as our connection(s) to our authentication database. For our
-purposes, we just need to be able to execute queries, but we dont need anything fancy.
+purposes, we just need to be able to execute queries, but we don't need anything fancy.
 
 The observant reader will notice that we have two functions:
 
@@ -391,9 +411,9 @@ with the proper queries! That's where our `do_login` function comes in!
 then uses our `get_password` function to retrieve a password from the
 user. We have to then hash the password with the same salt value that 
 we used in our `generate_db.py` python script. Finally, we see if a user
-with that name and password exist in our database. If they do, then they
-entered the proper password and we True, otherwise the password was incorrect
-and we return False.
+with that name and password exist in our database. If that username/password pair
+exists, then the user entered the proper password and we return `True`.
+Otherwise, the password was incorrect and we return `False`.
 
 Note: `get_password` is simply a wrapper around python's `getpass` function!
 
@@ -433,7 +453,9 @@ def do_login(username: str, salt: str, database: str):
 We have it all now! Let's glue all of our pieces together!
 
 First, lets import our modules:
+
 ```python
+# main.py
 import os
 import sys
 
@@ -451,7 +473,9 @@ from utils import (
 
 Let's also pull our data path, database, and salt
 from environment variables:
+
 ```python
+# main.py
 DATA_PATH = os.environ["DATA_PATH"]
 DB_SALT   = os.environ["DATABASE_SALT"].encode('utf-8')
 DB_PATH   = os.path.join(DATA_PATH, "database", "users.db")
@@ -459,13 +483,14 @@ DB_PATH   = os.path.join(DATA_PATH, "database", "users.db")
 
 And let's enter our main function! First, in our main function,
 we will use some helper functions to gather all of the files and 
-names of the files from our data directory. Then we will train our
+filenames from our data directory. Then we will train our
 new `FaceDetector` class and train it on those images. Once our model
-is trained, we can open up a video stream from our webcam:
+is trained, we can open up a video stream from our webcam.
 
 Note: `gather_files` is a helper function defined in the extra notes below!
 
 ```python
+# main.py
 def main():
     """Main entrypoint / loop of the system
     """
@@ -481,6 +506,7 @@ and search it for any relevant faces:
 
 Note: `resize_and_recolor` is a helper function defined in the extra notes below!
 ```python
+    # main.py
     while True:
         # Read the raw CV2 Frame from our Webcam
         _, frame      = video_capture.read()
@@ -497,6 +523,7 @@ Next, we draw a rectangle over any relevant faces and show the frame to the user
 Note: `draw_rectangle` is a helper function defined in the extra notes below!
 
 ```python
+        # main.py
         draw_rectangle(
             frame,
             locations=face_locations,
@@ -511,7 +538,7 @@ Note: `draw_rectangle` is a helper function defined in the extra notes below!
             break
 ```
 
-FInally, if we found any relevant faces, we can do the login flow. If the login 
+FInally, if we found any relevant faces, we can execute the login flow. If the login 
 is successful, we can will drop a user into a python shell, signifying success!
 
 ```python
@@ -631,3 +658,6 @@ def open_shell():
     print("Opening your shell of choice sir")
     pty.spawn(shell)
 ```
+
+## GitHub
+All code can be found [here](https://github.com/afoley587/secure-me)
